@@ -1,3 +1,6 @@
 rootProject.name = 'example-quarts'
 include 'quarts-single-basis'
+include 'job-store'
+include 'clustering'
+include 'common'
 
