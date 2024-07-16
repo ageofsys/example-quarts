@@ -9,6 +9,7 @@ import org.quartz.impl.matchers.GroupMatcher;
 
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.CronScheduleBuilder.cronSchedule;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 public class JdbcStoreScheduler {
@@ -22,25 +23,48 @@ public class JdbcStoreScheduler {
 
         scheduler.standby();
 
-        boolean jobExists = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(GROUP_NAME))
-                .stream()
-                .anyMatch(jobKey -> jobKey.getName().equals(JOB_NAME));
+//        boolean jobExists = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(GROUP_NAME))
+//                .stream()
+//                .anyMatch(jobKey -> jobKey.getName().equals(JOB_NAME));
 
-        if (!jobExists) {
-            JobDetail job = newJob(HelloJob.class)
-                    .withIdentity(JOB_NAME, GROUP_NAME)
-                    .build();
+//        if (!jobExists) {
+//            JobDetail job = newJob(HelloJob.class)
+//                    .withIdentity(JOB_NAME, GROUP_NAME)
+//                    .build();
+//
+//            Trigger trigger = newTrigger()
+//                    .withIdentity(TRIGGER_NAME, GROUP_NAME)
+//                    .startNow()
+//                    .withSchedule(
+//                            cronSchedule("0,5,10,15,20,25,30,35,40,45,50,55 * * * * ?")
+//                    )
+//                    .build();
+//
+//            scheduler.scheduleJob(job, trigger);
 
-            Trigger trigger = newTrigger()
-                    .withIdentity(TRIGGER_NAME, GROUP_NAME)
-                    .startNow()
-                    .withSchedule(
-                            cronSchedule("0,5,10,15,20,25,30,35,40,45,50,55 * * * * ?")
-                    )
-                    .build();
+            for (int i = 0; i < 20; i++) {
+                String jobName = "myJob-" + i;
 
-            scheduler.scheduleJob(job, trigger);
-        }
+                boolean jobExists = scheduler.getJobKeys(GroupMatcher.jobGroupEquals(GROUP_NAME))
+                        .stream()
+                        .anyMatch(jobKey -> jobKey.getName().equals(jobName));
+
+                if (!jobExists) {
+                    scheduler.scheduleJob(
+                            newJob(HelloJob.class)
+                                    .withIdentity("myJob-" + i, GROUP_NAME)
+                                    .build(),
+                            newTrigger()
+                                    .withIdentity("myTrigger " + i, GROUP_NAME)
+                                    .startNow()
+                                    .withSchedule(simpleSchedule()
+                                            .withIntervalInSeconds(5)
+                                            .repeatForever())
+                                    .build());
+                }
+            }
+
+//        }
 
         return scheduler;
     }
